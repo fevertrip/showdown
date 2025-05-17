@@ -32,14 +32,18 @@ export function checkDraw(board: Board): boolean {
 }
 
 // Get an AI move for a player
-export async function getAIMove(board: Board, player: Player): Promise<number> {
+export async function getAIMove(
+  board: Board, 
+  player: Player, 
+  model: string = "gpt-3.5-turbo"
+): Promise<number> {
   try {
     const response = await fetch("/api/openai", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ board, player }),
+      body: JSON.stringify({ board, player, model }),
     });
 
     if (!response.ok) {

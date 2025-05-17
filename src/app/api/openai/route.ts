@@ -8,10 +8,10 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { board, player } = await request.json();
+    const { board, player, model = "gpt-3.5-turbo" } = await request.json();
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: model,
       messages: [
         {
           role: "system",

@@ -3,8 +3,22 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { GameState, INITIAL_GAME_STATE, Player } from "@/types/game";
 import { checkWinner, checkDraw, getAIMove } from "@/lib/game-utils";
+
+// Available OpenAI models
+const AI_MODELS = [
+  { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" },
+  { value: "gpt-4", label: "GPT-4" },
+  { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
+];
 
 export default function TicTacToe() {
   const [gameState, setGameState] = useState<GameState>({ ...INITIAL_GAME_STATE });
@@ -12,6 +26,18 @@ export default function TicTacToe() {
     X: "AI Player 1",
     O: "AI Player 2",
   });
+  const [aiPlayerModels, setAiPlayerModels] = useState({
+    X: "gpt-3.5-turbo",
+    O: "gpt-3.5-turbo",
+  });
+
+  // Handle model change
+  const handleModelChange = (player: Player, model: string) => {
+    setAiPlayerModels((prev) => ({
+      ...prev,
+      [player]: model,
+    }));
+  };
 
   // Handle next move function
   const handleNextMove = async () => {
@@ -21,7 +47,11 @@ export default function TicTacToe() {
 
     try {
       // Get AI move
-      const position = await getAIMove(gameState.board, gameState.currentPlayer);
+      const position = await getAIMove(
+        gameState.board, 
+        gameState.currentPlayer, 
+        aiPlayerModels[gameState.currentPlayer]
+      );
       console.log(`AI ${gameState.currentPlayer} chose position: ${position}`);
 
       // Create new board with the move
@@ -100,6 +130,54 @@ export default function TicTacToe() {
   return (
     <div className="flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold mb-8">AI Tic Tac Toe Showdown</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 w-full max-w-2xl">
+        <Card className="p-4">
+          <h2 className="text-lg font-semibold mb-2 text-blue-500">Player X: {aiPlayerNames.X}</h2>
+          <div className="mb-2">
+            <label className="block text-sm mb-1">AI Model:</label>
+            <Select
+              value={aiPlayerModels.X}
+              onValueChange={(value) => handleModelChange("X", value)}
+              disabled={gameState.isProcessing}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a model" />
+              </SelectTrigger>
+              <SelectContent>
+                {AI_MODELS.map((model) => (
+                  <SelectItem key={model.value} value={model.value}>
+                    {model.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
+        
+        <Card className="p-4">
+          <h2 className="text-lg font-semibold mb-2 text-red-500">Player O: {aiPlayerNames.O}</h2>
+          <div className="mb-2">
+            <label className="block text-sm mb-1">AI Model:</label>
+            <Select
+              value={aiPlayerModels.O}
+              onValueChange={(value) => handleModelChange("O", value)}
+              disabled={gameState.isProcessing}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a model" />
+              </SelectTrigger>
+              <SelectContent>
+                {AI_MODELS.map((model) => (
+                  <SelectItem key={model.value} value={model.value}>
+                    {model.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
+      </div>
       
       <Card className="p-6 mb-6">
         <div className="text-xl font-semibold mb-4">{getStatusText()}</div>
